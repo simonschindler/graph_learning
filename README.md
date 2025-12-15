@@ -13,7 +13,6 @@ This repository contains the work for a graph learning assignment. The assignmen
 ├── data (ignored by Git)
 ├── GNN_tutorial.ipynb
 ├── gridsearch.npz
-├── main.py
 ├── pyproject.toml
 ├── README.md
 ├── report
@@ -44,10 +43,6 @@ The `data/` directory contains the datasets used for training and evaluating the
 
 - `data/Planetoid/Cora`: The Cora dataset, a citation network of scientific publications.
 - `data/TUDataset/MUTAG`: The MUTAG dataset, a collection of graphs representing chemical compounds.
-
-## Main Script
-
-The `main.py` file likely contains the main code for running experiments, training models, or performing other tasks related to the assignment.
 
 ## Grid Search
 
