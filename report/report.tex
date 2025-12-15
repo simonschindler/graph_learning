@@ -229,5 +229,148 @@ provide a clear answer to the central question:
       predictions.
 \end{itemize}
 
+\section{Task 2(c): Influence of Number of Convolutional Layers}
+
+Oversmoothing is an effect in Graph neural networks where, with an increasing number of layers, node representations become increasingly similar. This removal of local information leads to the model no longer being able to distinguish between nodes, causing a drop in predictive performance. Mathematically, this can be compared to a low-pass filter, where high frequency information (local differences) is continuously removed until embeddings converge to a global average.
+
+To see the phenomenon of oversmoothing, we used the previously found best hyperparameters and varied only the number of convolutional layers in the GCN from 2 to 128. We recorded the test accuracy and the Dirichlet energy of the node features after each layer.
+
+\subsection{Accuracy vs. Number of Layers}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/accuracy_vs_layers.pdf}
+    \caption{Effect of Number of Layers on Model Performance}
+    \label{fig:accuracy_vs_layers}
+\end{figure}
+
+Figure \ref{fig:accuracy_vs_layers} shows the achieved accuracy on the task against the number of layers a model contains. With shallow models we observe peak performance (around 90~\% accuracy). Here, the receptive field is large enough to capture local context, but unique node features are still preserved. With increasing number of layers, we observe a strong drop in accuracy. This happens, because the receptive field of the model exceeds the diameter of the graph. The Cora dataset is a small world network and has a diameter of 19 in its largest connected component. A 32-layer GNN on the other hand, expands the receptive field of a node to 32 hops. This means that every single node is aggregating information from every other node in the graph multiple times. The node embeddings therefore trend towards a global average of the entire dataset. Unique local features, which are required for classification are washed out. With the Cora Dataset having a high homophily, this local information is particularly relevant.
+
+\subsection{Dirichlet Energy of Layer Outputs}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dirichlet_energy_layers.pdf}
+    \caption{Dirichlet Energy per Layer for Different Number of Layers}
+    \label{fig:dirichlet_energy_layers}
+\end{figure}
+
+Figure \ref{fig:dirichlet_energy_layers} shows the values of the Dirichlet Energy for the output of each layer of a model, against the number of the layer. This allows a layer-wise perspective on the smoothing process. On the left the results can be seen on a log-log scale, on the right on a linear scale. As seen in the linear plot, all models begin with the same high Dirichlet energy at layer 0. This represents the high variance in the input features. The log-log plot then shows a strong decay for the deepest models. There, the energy decreases to close to zero within the first ten layers (especially drastic in the 64 and 128 layer networks). In this zone the hidden representations are effectively all identical, indicating that subsequent layers are computationally useless.
+
+In the final layers, we see that the Dirichlet energy for the deep networks rises again. This happens because Cross-Entropy Loss heavily penalizes predicting uniform probabilities (=low confidence).  However, since the network is learning from oversmoothed and uninformative node representations at this point, this forces the final layer to magnify tiny, random numerical differences into large score differences. This artificial increase in Dirichlet energy is not related to the actual capture of information, which is also evident by the low prediction accuracy for these types of networks seen in figure \ref{fig:accuracy_vs_layers}.
+
+\section{Task 2(d): Effect of label change on oversmoothing}
+
+The goal of this task was to investigate if oversmoothing is a mechanical artifact of GNNs or if it is also influenced by the learning objective. To do this we replaced the original labels with a structure based label - the node degree.
+
+This transformed the task from a classification to a regression task, where the model had to predict the degree of each node. To achieve this we replaced the Cross-Entropy loss with a Mean Squared Error loss and removed the final softmax activation to allow the prediction of continuous values. 
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dirichlet_energy_layers_node_degree_prediction.pdf}
+    \caption{Dirichlet Energy per Layer for Different Number of Layers when predicting Node Degree}
+    \label{fig:dirichlet_energy_layers_node_degree_prediction}
+\end{figure}
+
+Figure \ref{fig:dirichlet_energy_layers_node_degree_prediction} shows the results for the Dirichlet energy per layer for all the different layers of every tested model. We find that in comparison to the previous task, particularly the 32 layer model does not show an as strong decay in Dirichlet energy.
+
+These results indicate that oversmoothing is not solely a mechanical artifact of GNNs, but also influenced by the learning objective. In the original task, the high homophily of the graph meant that nodes with similar features also had similar labels. As a result, the GNN was incentivized to smooth node representations to capture this similarity, leading to oversmoothing. In contrast, predicting node degree does not benefit as much from smoothing, as nodes with similar degrees are not necessarily closely connected.
+
+Nevertheless, we still observe a decay in Dirichlet energy for deeper models, indicating that oversmoothing is still present. This suggests that while the learning objective influences the degree of oversmoothing, the architectural properties of GNNs inherently lead to some level of smoothing as layers are added \cite{rusch2023surveyoversmoothinggraphneural}.
+
+\section{Task 2(e): Oversmoothing and Activation Functions}
+
+The goal of this task was to investigate the influence of different activation functions on the oversmoothing phenomenon. The following activation functions were tested: Linear, ReLU and Sigmoid.
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/activation_function_comparison_accuracy.pdf}
+    \caption{Effect of Activation Function on Model Performance}
+    \label{fig:activation_function_comparison_accuracy}
+\end{figure}
+
+Figure \ref{fig:activation_function_comparison_accuracy} shows the achieved
+accuracy on the task against the number of layers a model contains for the
+different activation functions. We observe that the Sigmoid activation function
+leads to the worst performance overall, as well as the quickest drop in
+accuracy. There the accuracy is already only 0.3 for the 4 layer model.
+
+Accuracy is similar for the 2-layer models using ReLU and Linear activation
+functions. However, with increasing number of layers the linear activation
+minimally outperforms the ReLU activation, before they both drop to an accuracy
+of 0.3 at 32 layers.
+
+The poor performance of the sigmoid activation function can be explained by the
+vanishing gradient problem. The sigmoid function squashes any input value into
+the range between 0 and 1. Large absolute values are therefore mapped close to
+these borders. There, the gradient of the sigmoid function is small, leading to
+very small weight updates during backpropagation. Additionally, this effect
+gets even worse for multiple layers, where the gradients are multiplied for
+each layer during backpropagation.
+
+The slightly better performance of the linear activation function compared to
+the ReLU activation is likely due to the nature of the Cora dataset. The high
+homophily in the dataset means that simply taking the average of the neighbors
+can be a successful strategy to achieve correct classifications.
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dirichlet_energy_layers_activation_ReLU.pdf}
+    \caption{Dirichlet Energy per Layer for Different Number of Layers - ReLU Activation}
+    \label{fig:dirichlet_energy_layers_activation_ReLU}
+\end{figure}
+
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dirichlet_energy_layers_activation_Linear.pdf}
+    \caption{Dirichlet Energy per Layer for Different Number of Layers - Linear Activation}
+    \label{fig:dirichlet_energy_layers_activation_Linear}
+\end{figure}
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/dirichlet_energy_layers_activation_Sigmoid.pdf}
+    \caption{Dirichlet Energy per Layer for Different Number of Layers - Sigmoid Activation}
+    \label{fig:dirichlet_energy_layers_activation_Sigmoid}
+\end{figure}
+
+
+Figures \ref{fig:dirichlet_energy_layers_activation_ReLU},
+\ref{fig:dirichlet_energy_layers_activation_Linear} and
+\ref{fig:dirichlet_energy_layers_activation_Sigmoid} show the Dirichlet energy
+per layer for all the different layers of every tested model for the different
+activation functions.
+
+We find that the Dirichlet energy is immediately the lowest after the first
+layer for the Sigmoid activation function. This is due to the squashing effect
+of the sigmoid function, which reduces the variance in the node features. The
+Dirichlet energy then decreases further after every layer, before increasing
+again in the last layers due to the use of Cross-Entropy Loss. For the 128
+layer model, we observe the Dirichlet energy becoming so small, that the
+computer can no longer distinguish it from zero. This indicates that the node
+features have become nearly identical. Overall figure
+\ref{fig:dirichlet_energy_layers_activation_Sigmoid} shows an oversmoothing
+effect in addition to the squashing effect.
+
+For the Linear activation function, we observe the highest Dirichlet energy
+after the first layer in all models. This is because the linear activation
+function does not modify the node features at all, preserving their variance.
+However, we still observe a strong decay in Dirichlet energy for deeper models,
+indicating that oversmoothing is still present. Yet, because the linear
+activation function does neither squash (sigmoid) nor threshold (ReLU) the node
+features, the energy stays higher for longer.
+
+For the ReLU activation function, we again observe a decay in Dirichlet energy
+for deeper models, indicating the presence of oversmoothing. The ReLU
+activation function thresholds negative values to zero, which reduces the
+variance in the node features compared to the linear activation function.
+However, it does not squash large positive values like the sigmoid function,
+allowing it to maintain a higher Dirichlet energy than the sigmoid activation.
+
+
+\bibliographystyle{plain}
+\bibliography{references}  % references.bib is your bibliography file
+
 
 \end{document}

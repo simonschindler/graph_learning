@@ -1,5 +1,13 @@
 # Fdb version 4
-["pdflatex"] 1765822977.75625 "report.tex" "report.pdf" "report" 1765822978.47717 0
+["bibtex report"] 1765831338.14981 "report.aux" "report.bbl" "report" 1765831339.16106 0
+  "./references.bib" 1765831328.78627 374 64f67a5d71a2d53dd404be9421495927 ""
+  "/usr/local/texlive/2025/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
+  "report.aux" 1765831338.94629 5943 97cdf32bb01eea1cfd3f843653b1a083 "pdflatex"
+  (generated)
+  "report.bbl"
+  "report.blg"
+  (rewritten before read)
+["pdflatex"] 1765831338.22004 "report.tex" "report.pdf" "report" 1765831339.16115 0
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -92,11 +100,19 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1755000525 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1755000479 3345739 6f08fbd314871b80f00649c62b3c8aa0 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
+  "figures/accuracy_vs_layers.pdf" 1765831099.12814 14434 0fc941c6cab1bca4ec66c362176b2c90 ""
+  "figures/activation_function_comparison_accuracy.pdf" 1765831109.4116 16627 99ff41f06724a9ed5fac2d6ec4592812 ""
+  "figures/dirichlet_energy_layers.pdf" 1765831088.81585 29250 de7d129093b1ff8e56fc640587122236 ""
+  "figures/dirichlet_energy_layers_activation_Linear.pdf" 1765831038.25224 31409 a05407b85e4433c3ec01df85f153dcac ""
+  "figures/dirichlet_energy_layers_activation_ReLU.pdf" 1765831058.82587 29730 3a77f240b4ea8640a1bc61fc52911f8a ""
+  "figures/dirichlet_energy_layers_activation_Sigmoid.pdf" 1765831069.71361 29104 6fcd2875e2de27d11f699b739fec030c ""
+  "figures/dirichlet_energy_layers_node_degree_prediction.pdf" 1765831079.41034 30038 f2eeac6335213e1c1b375a2419db0978 ""
   "figures/gridsearch.png" 1765821314.4652 108256 35d1415daeedb2fe369393ca48fd8cc3 ""
   "figures/homohist.png" 1765822843.66954 17997 145fb959213d616e54206f925884a088 ""
   "figures/homophily.png" 1765819280.35998 59693 0b132e827d93b1d29f0420ae5202e3c0 ""
-  "report.aux" 1765822978.39044 2775 75a767603e95e4c5f310caabeb1e384c "pdflatex"
-  "report.tex" 1765822975.01866 9622 af45ce5556b8f0951a768f68e9580daa ""
+  "report.aux" 1765831338.94629 5943 97cdf32bb01eea1cfd3f843653b1a083 "pdflatex"
+  "report.bbl" 1765831338.21841 235 e31b3faf5ea0a9658fa5e38d27a3eb5e "bibtex report"
+  "report.tex" 1765831335.69724 20418 d3a25c0c11dbe4061b273c64fcb9de50 ""
   (generated)
   "report.aux"
   "report.log"
