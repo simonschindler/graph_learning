@@ -46,26 +46,33 @@ The `data/` directory contains the datasets used for training and evaluating the
 
 ## Grid Search
 
-The `gridsearch.npz` file probably stores the results of a grid search over hyperparameters for one of the models.
+The `gridsearch.npz` file stores the results of a grid search over hyperparameters for one of the models.
 
 ## Python Environment Setup
+
 To run the Jupyter notebooks and reproduce the results, a specific Python environment is
 required. The following steps outline the setup process using uv, a fast Python package installer.
+
 1. Install uv: If not already installed, run the following command:
+
 ```bash
 curl -Lsf https://astral.sh/uv/install.sh | sh
 ```
+
 2. Create Virtual Environment: This project uses Python 3.13. From the project root,
 create a virtual environment:
+
 ```bash
 uv venv
 ```
+
 uv will automatically detect the required Python version from the .python-version file.
 3. Install Dependencies: Activate the environment and install packages using the sync
 command:
+
 ```bash
 uv pip sync
 ```
+
 This command uses the pyproject.toml and uv.lock files to ensure a reproducible envi-
 ronment. You can then start Jupyter Lab by running `jupyter lab`.
-
