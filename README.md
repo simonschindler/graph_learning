@@ -31,7 +31,7 @@ The `assignment.pdf` file describes the tasks that were completed for this proje
 - `2_b.ipynb`: Notebook for task 2b.
 - `2_c_d_e.ipynb`: Notebook for tasks 2c, 2d, and 2e.
 
-The `GNN_tutorial.ipynb` and `tutorial.ipynb` are additional notebooks that were likely used for learning and exploration purposes.
+The `GNN_tutorial.ipynb` is a notebook that was used for learning and exploration purposes before the actual assignment.
 
 ## Report
 
