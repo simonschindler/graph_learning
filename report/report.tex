@@ -1,0 +1,233 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs} % For better looking tables
+\usepackage{multirow} % For multirow cells in tables
+\usepackage{float}    % For H placement of figures/tables
+\usepackage[margin=1in]{geometry} % Set margins for a two-page limit
+\usepackage{fancyhdr} % For header and footer
+\usepackage{verbatim}
+\usepackage{cleveref}
+
+% Define standard colors for the report
+\usepackage[dvipsnames]{xcolor}
+\definecolor{UniVienna}{HTML}{D9004C} % University of Vienna Pink/Red
+
+% Header/Footer setup
+\pagestyle{fancy}
+\fancyhead[L]{Graph Learning 2025W}
+\fancyhead[R]{Programming Assignment 1 Summary}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Title Block
+\title{
+    \vspace{-1.5cm}
+    \textbf{\Large Programming Assignment 1: GNN-based Node Classification on Cora}\\
+    \vspace{0.3cm}
+    \large \textcolor{UniVienna}{Summary of Findings for Graph Learning (2025W)}
+}
+\author{
+    \emph{Simon Schindler, Marlene Grabner, Aryan Rahbari}
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+% --- START OF PAGE 1 ---
+
+\section{Introduction}
+
+This report summarizes the findings for the semi-supervised node classification
+tasks on the Cora citation network, as required by Programming Assignment 1. We
+utilized the PyTorch Geometric library for all experiments.
+
+\subsection*{Python Environment Setup}
+To run the Jupyter notebooks and reproduce the results, a specific Python
+environment is required. The following steps outline the setup process using
+\texttt{uv}, a fast Python package installer.
+
+\begin{enumerate}
+    \item \textbf{Install \texttt{uv}:} If not already installed, run the following command:
+    \begin{verbatim}
+curl -Lsf https://astral.sh/uv/install.sh | sh
+    \end{verbatim}
+
+    \item \textbf{Create Virtual Environment:} This project uses Python 3.13. From the project root, create a virtual environment:
+    \begin{verbatim}
+uv venv
+    \end{verbatim}
+    \texttt{uv} will automatically detect the required Python version from the \texttt{.python-version} file.
+
+    \item \textbf{Install Dependencies:} Activate the environment and install packages using the \texttt{sync} command:
+    \begin{verbatim}
+uv pip sync
+    \end{verbatim}
+    This command uses the \texttt{pyproject.toml} and \texttt{uv.lock} files to ensure a reproducible environment. You can then start Jupyter Lab by running \texttt{jupyter lab}.
+\end{enumerate}
+
+\section{Task 2(a): Hyperparameter Optimization and Best Model}
+The objective of this task was to find a GCN-based model that achieves at least
+$80\%$ test accuracy on the Cora dataset using the standard validation split. A
+comprehensive grid search was performed over key hyperparameters, including
+hidden dimensions, number of layers, dropout rate, learning rate (LR), and
+convolutional layer type (GCNConv, GraphConv, GATConv).
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Hyperparameter} & \textbf{Evaluated Values} \\
+        \hline
+        Hidden Dimensions & \textbf{16}, 64, 128 \\
+        Number of Layers & \textbf{2}, 4, 8 \\
+        Dropout & 0.3, \textbf{0.5}, 0.7 \\
+        Learning Rate & 0.01, 0.005, \textbf{0.001} \\
+        Epochs & 10, 50, \textbf{200} \\
+        Convolution Layer & \textbf{GCNConv}, GraphConv, GATConv \\
+        \hline
+    \end{tabular}
+    \caption{Hyperparameters evaluated in the grid search. The best configuration is marked in \textbf{bold}.}
+    \label{tab:gridsearch_params}
+\end{table}
+
+Table \ref{tab:gridsearch_params} summarizes the hyperparameters evaluated.
+
+\subsection{Optimal GNN Architecture}
+The best-performing model, selected based on the highest validation accuracy,
+significantly exceeded the target, achieving a Test Accuracy of $88.50\%$. The
+optimal hyperparameters and resulting performance metrics are summarized in
+Table \ref{tab:best_model}.
+
+\begin{table}[H]
+    \centering
+    \caption{Optimal GCN Architecture and Performance on Cora}
+    \label{tab:best_model}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Hyperparameter} & \textbf{Setting} & \textbf{Notes} \\
+        \midrule
+        Convolutional Layer & \texttt{GCNConv} & Standard GCN \\
+        Number of Layers & 2 & Shallow architecture \\
+        Hidden Channels & 16 & Smallest dimension tested \\
+        Dropout Rate & 0.5 & Optimal regularization \\
+        Learning Rate (LR) & 0.001 & Slow, stable convergence \\
+        Epochs & 200 & Full training run \\
+        \midrule
+        \textbf{Performance} & \textbf{Accuracy} & \\
+        \midrule
+        Training Accuracy & $95.36\%$ & \\
+        Validation Accuracy & $88.00\%$ & (Used for selection) \\
+        Test Accuracy & $88.50\%$ & ($\mathbf{>80\%}$ target reached) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Key Hyperparameter Influences}
+Analysis of the grid search results revealed clear patterns regarding model performance and overfitting:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/gridsearch.png}
+    \caption{Influence of model hyperparameters on validation accuracy. Best 10 runs are individually marked with crosses.}
+    \label{fig:gridsearch}
+\end{figure}
+
+Analyzing \cref{fig:gridsearch} yields the following insights:
+\begin{itemize}
+    \item \textbf{Number of Layers:} Performance peaked dramatically at 2
+      layers. Deeper models (4 and 8 layers) showed a significant drop in
+      accuracy, indicating that the standard GCN architecture quickly suffers
+      from \textbf{oversmoothing} on this dataset, where node representations
+      become indistinguishable across the graph.
+    \item \textbf{Hidden Dimensions:} The smallest dimension tested, 16, was
+      optimal. Models with 64 or 128 channels showed decreased accuracy and a
+      greater tendency toward overfitting (larger gap between training and
+      validation accuracy).
+    \item \textbf{Learning Rate:} A low LR of 0.001 was crucial for achieving
+      the highest accuracy, suggesting that fine-tuning weights over many steps
+      (200 epochs) is more effective than rapid learning.
+    \item \textbf{Layer Type:} The standard \texttt{GCNConv} performed
+      marginally better than \texttt{GraphConv} and significantly better than
+      \texttt{GATConv}, suggesting the attention mechanism was not necessary
+      for performance improvement in this setting.
+\end{itemize}
+
+\clearpage
+
+\section{Task 2(b): Homophily Analysis}
+
+This task focused on analyzing the graph's homophily and investigating the
+hypothesis that nodes with low homophily scores are more likely to be
+misclassified by the optimized GNN.
+
+\subsection{Homophily Measurement}
+\subsubsection{Overall Homophily}
+The overall Node Homophily $H_{\text{node}}$ was calculated using the formula:
+$$
+H_{\text{node}} = \frac{1}{|\mathcal{V}|} \sum_{v \in \mathcal{V}} \frac{ | \{ (w,v) : w \in \mathcal{N}(v) \wedge y_v = y_w \} |  } { |\mathcal{N}(v)| }
+$$
+The computed homophily score for the Cora dataset is $\mathbf{H_{\text{node}}
+\approx 0.8252}$. This confirms that Cora is a \textbf{highly homophilous
+graph}, where approximately $82.5\%$ of a node's neighbors share its class
+label. 
+
+\subsubsection{Homophily Distribution}
+Figure /ref{fig:homohist} visualizes a histogram of per-node homophily scores
+showing a severely skewed distribution,
+with the vast majority of nodes (over 65\%) residing in the highest homophily
+bin ($0.9 - 1.0$), further solidifying the homophilous nature of the graph.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/homohist.png}
+    \caption{Homophily Distribution in Cora}
+    \label{fig:homohist}
+\end{figure}
+
+\subsection{Predictive Performance vs. Homophily}
+
+\subsubsection{Experimental Design}
+To test the relationship between homophily and predictive performance, the
+nodes in the validation set were partitioned into 10 bins based on their
+individual homophily score (e.g., $0.0-0.1$, $0.1-0.2$, ..., $0.9-1.0$). The
+classification accuracy of the top 10 models (identified in Task 2a) was then
+measured for the nodes within each bin.
+
+\subsubsection{Findings}
+The results, visualized in a box plot (Figure \ref{fig:acc_vs_homophily}),
+provide a clear answer to the central question:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/homophily.png}
+    \caption{Validation Accuracy Distribution Across Node Homophily Bins}
+    \label{fig:acc_vs_homophily}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{High Homophily ($\ge 0.8$):} Models show \textbf{excellent
+      performance}. In the $0.9-1.0$ bin, the median accuracy across all runs
+      approached $100\%$. The GCN performs optimally when the neighborhood
+      signal is consistent.
+    \item \textbf{Low Homophily ($\mathbf{< 0.5}$):} The models consistently
+      struggle. The median accuracy in the $0.0-0.1$ bin is very low (well
+      below $20\%$), indicating that the majority of nodes in this bin are
+      misclassified.
+    \item \textbf{Conclusion:} Nodes with low homophily are
+      \textbf{significantly more likely to be misclassified}. This is a
+      characteristic failure mode of standard GCNs, which operate under the
+      assumption of homophily. When a node is heterophilous (linked to
+      different classes), the message-passing mechanism aggregates conflicting
+      labels, corrupting the node's representation and leading to incorrect
+      predictions.
+\end{itemize}
+
+
+\end{document}
